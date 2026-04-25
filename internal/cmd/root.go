@@ -64,7 +64,7 @@ var rootCmd = &cobra.Command{
 
 		trans := translator.NewBuiltinTranslator(client)
 		fmtr, _ := formatter.New("table")
-		exec := executor.New(trans, fmtr, os.Stdout)
+		exec := executor.New(trans, fmtr, os.Stdout, client)
 
 		r := repl.New(exec, client, addresses)
 		r.Run()
