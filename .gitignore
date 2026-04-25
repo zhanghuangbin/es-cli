@@ -1,4 +1,6 @@
 .idea
 .worktrees
 *.exe
+
+_output
 /.claude/settings.local.json

@@ -12,20 +12,23 @@ import (
 )
 
 type REPL struct {
-	executor  *executor.Executor
-	client    *elasticsearch.Client
-	format    string
-	completer *Completer
-	history   *History
+	executor        *executor.Executor
+	client          *elasticsearch.Client
+	format          string
+	completer       *Completer
+	history         *History
+	multilineBuffer string
+	addresses       []string
 }
 
-func New(exec *executor.Executor, client *elasticsearch.Client) *REPL {
+func New(exec *executor.Executor, client *elasticsearch.Client, addresses []string) *REPL {
 	return &REPL{
 		executor:  exec,
 		client:    client,
 		format:    "table",
 		completer: NewCompleter(client),
 		history:   NewHistory(),
+		addresses: addresses,
 	}
 }
 
@@ -62,6 +65,23 @@ func (r *REPL) executeInput(input string) {
 		return
 	}
 
+	// 处理反斜杠续行
+	if strings.HasSuffix(input, `\`) {
+		line := strings.TrimSuffix(input, `\`)
+		r.multilineBuffer += line + " "
+		return
+	}
+
+	// 拼接缓冲区中的续行
+	if r.multilineBuffer != "" {
+		input = r.multilineBuffer + input
+		r.multilineBuffer = ""
+	}
+
+	if strings.HasSuffix(input, ";") {
+		input = strings.TrimSuffix(input, ";")
+	}
+
 	if err := r.executor.Execute(input); err != nil {
 		fmt.Fprintf(os.Stderr, "错误: %v\n", err)
 	}
@@ -74,6 +94,8 @@ func (r *REPL) handleBuiltinCommand(input string) {
 	switch cmd {
 	case ".help":
 		r.showHelp()
+	case ".ping":
+		r.handlePing()
 	case ".format":
 		if len(parts) < 2 {
 			fmt.Printf("当前格式: %s\n", r.format)
@@ -99,6 +121,7 @@ func (r *REPL) handleBuiltinCommand(input string) {
 func (r *REPL) showHelp() {
 	fmt.Println(`可用命令:
   .help            显示帮助信息
+  .ping            测试 ES 连接是否正常
   .format <类型>   设置输出格式 (table, json*, csv*)
   .indices         列出所有索引
   .schema <索引名> 显示索引 mapping
@@ -108,7 +131,12 @@ func (r *REPL) showHelp() {
   * json/csv 格式暂未实现
 
 输入 SQL 语句查询 Elasticsearch。
-示例: SELECT * FROM my_index LIMIT 10`)
+示例: SELECT * FROM my_index LIMIT 10
+
+支持反斜杠 (\) 续行:
+  SELECT * FROM my_index \
+  WHERE id = 1 \
+  LIMIT 10`)
 }
 
 func (r *REPL) setFormat(format string) {
@@ -133,4 +161,20 @@ func (r *REPL) showSchema(index string) {
 	if err := r.executor.Execute(sql); err != nil {
 		fmt.Fprintf(os.Stderr, "错误: %v\n", err)
 	}
+}
+
+func (r *REPL) handlePing() {
+	res, err := r.client.Ping()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "错误: ping ES 失败: %v\n", err)
+		return
+	}
+	defer res.Body.Close()
+
+	if res.IsError() {
+		fmt.Fprintf(os.Stderr, "错误: ES ping 失败: %s\n", res.String())
+		return
+	}
+
+	fmt.Printf("%s: pong\n", strings.Join(r.addresses, " "))
 }
