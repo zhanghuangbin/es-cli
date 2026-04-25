@@ -37,6 +37,12 @@ var sqlKeywords = []prompt.Suggest{
 	{Text: "VALUES", Description: "指定值"},
 	{Text: "SHOW TABLES", Description: "列出索引"},
 	{Text: "DESCRIBE", Description: "显示 mapping"},
+	{Text: "CREATE TABLE", Description: "创建索引"},
+	{Text: "DROP TABLE", Description: "删除索引"},
+	{Text: "ALTER INDEX", Description: "修改索引设置"},
+	{Text: "ALTER TABLE", Description: "修改索引"},
+	{Text: "RENAME TO", Description: "重命名索引"},
+	{Text: "SETTINGS", Description: "索引设置"},
 }
 
 var builtinCommands = []prompt.Suggest{
@@ -72,7 +78,9 @@ func (c *Completer) Complete(d prompt.Document) []prompt.Suggest {
 	upperText := strings.ToUpper(text)
 	if strings.Contains(upperText, "FROM") || strings.Contains(upperText, "INTO") ||
 		strings.Contains(upperText, "UPDATE") || strings.Contains(upperText, "DESCRIBE") ||
-		strings.Contains(upperText, ".SCHEMA") {
+		strings.Contains(upperText, ".SCHEMA") ||
+		strings.Contains(upperText, "CREATE TABLE") || strings.Contains(upperText, "DROP TABLE") ||
+		strings.Contains(upperText, "ALTER INDEX") || strings.Contains(upperText, "ALTER TABLE") {
 		indices := c.getIndices()
 		return prompt.FilterHasPrefix(indices, word, true)
 	}

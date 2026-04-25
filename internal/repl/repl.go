@@ -133,6 +133,15 @@ func (r *REPL) showHelp() {
 输入 SQL 语句查询 Elasticsearch。
 示例: SELECT * FROM my_index LIMIT 10
 
+DDL/DML 示例:
+  CREATE TABLE my_index (name TEXT, age INTEGER) SETTINGS (number_of_shards=3)
+  DROP TABLE my_index
+  INSERT INTO my_index (name, age) VALUES ('张三', 25)
+  UPDATE my_index SET age=26 WHERE name='张三'
+  DELETE FROM my_index WHERE name='张三'
+  ALTER INDEX my_index SETTINGS (number_of_replicas=2)
+  ALTER TABLE my_index RENAME TO new_index
+
 支持反斜杠 (\) 续行:
   SELECT * FROM my_index \
   WHERE id = 1 \
