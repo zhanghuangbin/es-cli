@@ -84,8 +84,9 @@ func (h *CreateHandler) Execute(ctx context.Context, sql string) (*types.Result,
 
 	return &types.Result{
 		Meta: types.Meta{
-			Status:  200,
-			Message: fmt.Sprintf("索引 %s 创建成功", tableName),
+			Status:   200,
+			Message:  fmt.Sprintf("索引 %s 创建成功", tableName),
+			Endpoint: fmt.Sprintf("PUT /%s", tableName),
 			Stat: map[string]any{
 				"索引名":                 tableName,
 				"acknowledged":        esResp.Acknowledged,
@@ -94,6 +95,7 @@ func (h *CreateHandler) Execute(ctx context.Context, sql string) (*types.Result,
 		},
 		Columns: []string{"结果"},
 		Rows:    [][]any{{fmt.Sprintf("索引 %s 创建成功", tableName)}},
+		Source:  string(respBody),
 	}, nil
 }
 

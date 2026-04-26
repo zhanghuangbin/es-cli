@@ -81,12 +81,14 @@ func (h *InsertHandler) Execute(ctx context.Context, sql string) (*types.Result,
 		return nil, err
 	}
 	result.Meta.Message = "文档插入成功"
+	result.Meta.Endpoint = fmt.Sprintf("POST /%s/_doc", tableName)
 	result.Meta.Stat = map[string]any{
 		"操作":     esResp.Result,
 		"_id":    esResp.ID,
 		"_index": esResp.Index,
 		"影响行数":   1,
 	}
+	result.Source = string(respBody)
 
 	return result, nil
 }

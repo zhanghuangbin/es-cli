@@ -101,8 +101,9 @@ func (h *AlterHandler) executeAlterSettings(ctx context.Context, indexName, sett
 	msg := fmt.Sprintf("索引 %s 设置更新成功", indexName)
 	return &types.Result{
 		Meta: types.Meta{
-			Status:  200,
-			Message: msg,
+			Status:   200,
+			Message:  msg,
+			Endpoint: fmt.Sprintf("PUT /%s/_settings", indexName),
 			Stat: map[string]any{
 				"索引名":          indexName,
 				"acknowledged": esResp.Acknowledged,
@@ -110,6 +111,7 @@ func (h *AlterHandler) executeAlterSettings(ctx context.Context, indexName, sett
 		},
 		Columns: []string{"结果"},
 		Rows:    [][]any{{msg}},
+		Source:  string(respBody),
 	}, nil
 }
 
@@ -160,8 +162,9 @@ func (h *AlterHandler) executeAlterRename(ctx context.Context, oldName, newName 
 	msg := fmt.Sprintf("已为索引 %s 添加别名 %s", oldName, newName)
 	return &types.Result{
 		Meta: types.Meta{
-			Status:  200,
-			Message: msg,
+			Status:   200,
+			Message:  msg,
+			Endpoint: "POST /_aliases",
 			Stat: map[string]any{
 				"原索引名":         oldName,
 				"别名":           newName,
@@ -170,5 +173,6 @@ func (h *AlterHandler) executeAlterRename(ctx context.Context, oldName, newName 
 		},
 		Columns: []string{"结果"},
 		Rows:    [][]any{{msg}},
+		Source:  string(respBody),
 	}, nil
 }

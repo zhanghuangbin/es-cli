@@ -74,8 +74,9 @@ func (h *DeleteHandler) Execute(ctx context.Context, sql string) (*types.Result,
 
 	return &types.Result{
 		Meta: types.Meta{
-			Status:  200,
-			Message: "删除完成",
+			Status:   200,
+			Message:  "删除完成",
+			Endpoint: fmt.Sprintf("POST /%s/_delete_by_query", tableName),
 			Stat: map[string]any{
 				"删除行数":   esResp.Deleted,
 				"匹配总数":   esResp.Total,
@@ -85,6 +86,7 @@ func (h *DeleteHandler) Execute(ctx context.Context, sql string) (*types.Result,
 		},
 		Columns: []string{"结果"},
 		Rows:    [][]any{{"删除完成"}},
+		Source:  string(respBody),
 	}, nil
 }
 

@@ -57,7 +57,8 @@ func (h *QueryHandler) Execute(ctx context.Context, sql string) (*types.Result, 
 
 	if res.IsError() {
 		return &types.Result{
-			Meta: types.Meta{Status: res.StatusCode, Message: string(respBody)},
+			Meta:   types.Meta{Status: res.StatusCode, Message: string(respBody), Endpoint: "POST /_sql"},
+			Source: string(respBody),
 		}, fmt.Errorf("ES 错误 [%d]: %s", res.StatusCode, respBody)
 	}
 
@@ -78,12 +79,14 @@ func (h *QueryHandler) Execute(ctx context.Context, sql string) (*types.Result, 
 
 	return &types.Result{
 		Meta: types.Meta{
-			Status: res.StatusCode,
+			Status:   res.StatusCode,
+			Endpoint: "POST /_sql",
 			Stat: map[string]any{
 				"返回行数": len(rows),
 			},
 		},
 		Columns: columns,
 		Rows:    rows,
+		Source:  string(respBody),
 	}, nil
 }

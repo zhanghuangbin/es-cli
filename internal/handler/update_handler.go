@@ -75,8 +75,9 @@ func (h *UpdateHandler) Execute(ctx context.Context, sql string) (*types.Result,
 
 	return &types.Result{
 		Meta: types.Meta{
-			Status:  200,
-			Message: "更新完成",
+			Status:   200,
+			Message:  "更新完成",
+			Endpoint: fmt.Sprintf("POST /%s/_update_by_query", tableName),
 			Stat: map[string]any{
 				"更新行数":   esResp.Updated,
 				"匹配总数":   esResp.Total,
@@ -86,6 +87,7 @@ func (h *UpdateHandler) Execute(ctx context.Context, sql string) (*types.Result,
 		},
 		Columns: []string{"结果"},
 		Rows:    [][]any{{"更新完成"}},
+		Source:  string(respBody),
 	}, nil
 }
 
