@@ -4,12 +4,12 @@ import (
 	"io"
 
 	"github.com/jedib0t/go-pretty/v6/table"
-	"github.com/zhanghuangbin/es-cli/internal/translator"
+	"github.com/zhanghuangbin/es-cli/internal/types"
 )
 
 type TableFormatter struct{}
 
-func (f *TableFormatter) Format(result *translator.Result, w io.Writer) error {
+func (f *TableFormatter) Format(result *types.Result, w io.Writer) error {
 	if len(result.Columns) == 0 {
 		return nil
 	}

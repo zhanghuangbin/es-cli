@@ -1,4 +1,4 @@
-package executor
+package handler
 
 import (
 	"context"
@@ -8,7 +8,7 @@ import (
 	"strings"
 
 	"github.com/elastic/go-elasticsearch/v8"
-	"github.com/zhanghuangbin/es-cli/internal/translator"
+	"github.com/zhanghuangbin/es-cli/internal/types"
 	"github.com/zhanghuangbin/es-cli/pkg/es"
 )
 
@@ -43,7 +43,7 @@ var reUpdate = regexp.MustCompile(
 //   - 数字：整数或浮点数，如 42, 3.14
 //   - 布尔值：true / false（不区分大小写）
 //   - 空值：null / NULL
-func (h *UpdateHandler) Execute(ctx context.Context, sql string) (*translator.Result, error) {
+func (h *UpdateHandler) Execute(ctx context.Context, sql string) (*types.Result, error) {
 	tableName, setFields, whereConditions, err := parseUpdate(sql)
 	if err != nil {
 		return nil, err
@@ -62,8 +62,8 @@ func (h *UpdateHandler) Execute(ctx context.Context, sql string) (*translator.Re
 		return nil, err
 	}
 
-	return &translator.Result{
-		Meta: translator.Meta{
+	return &types.Result{
+		Meta: types.Meta{
 			Status:  200,
 			Message: "更新完成",
 		},

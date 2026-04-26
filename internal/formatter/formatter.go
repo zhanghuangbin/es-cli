@@ -4,11 +4,11 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/zhanghuangbin/es-cli/internal/translator"
+	"github.com/zhanghuangbin/es-cli/internal/types"
 )
 
 type Formatter interface {
-	Format(result *translator.Result, w io.Writer) error
+	Format(result *types.Result, w io.Writer) error
 }
 
 func New(format string) (Formatter, error) {

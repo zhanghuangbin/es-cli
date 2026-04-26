@@ -1,4 +1,4 @@
-package executor
+package handler
 
 import (
 	"context"
@@ -8,7 +8,7 @@ import (
 	"strings"
 
 	"github.com/elastic/go-elasticsearch/v8"
-	"github.com/zhanghuangbin/es-cli/internal/translator"
+	"github.com/zhanghuangbin/es-cli/internal/types"
 	"github.com/zhanghuangbin/es-cli/pkg/es"
 )
 
@@ -54,7 +54,7 @@ func NewCreateHandler(client *elasticsearch.Client) *CreateHandler {
 // 支持的语法：
 //
 //	CREATE TABLE table_name (col1 TYPE1, col2 TYPE2, ...) [SETTINGS (k1=v1, k2=v2, ...)]
-func (h *CreateHandler) Execute(ctx context.Context, sql string) (*translator.Result, error) {
+func (h *CreateHandler) Execute(ctx context.Context, sql string) (*types.Result, error) {
 	tableName, columns, settings, err := parseCreateTable(sql)
 	if err != nil {
 		return nil, err
@@ -73,8 +73,8 @@ func (h *CreateHandler) Execute(ctx context.Context, sql string) (*translator.Re
 		return nil, err
 	}
 
-	return &translator.Result{
-		Meta: translator.Meta{
+	return &types.Result{
+		Meta: types.Meta{
 			Status:  200,
 			Message: fmt.Sprintf("索引 %s 创建成功", tableName),
 		},

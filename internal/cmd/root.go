@@ -10,16 +10,15 @@ import (
 	"github.com/zhanghuangbin/es-cli/internal/executor"
 	"github.com/zhanghuangbin/es-cli/internal/formatter"
 	"github.com/zhanghuangbin/es-cli/internal/repl"
-	"github.com/zhanghuangbin/es-cli/internal/translator"
 	"github.com/zhanghuangbin/es-cli/pkg/es"
 )
 
 var (
-	addresses    []string
-	username     string
-	password     string
+	addresses     []string
+	username      string
+	password      string
 	passwordStdin bool
-	caCert       string
+	caCert        string
 )
 
 var rootCmd = &cobra.Command{
@@ -62,9 +61,8 @@ var rootCmd = &cobra.Command{
 
 		fmt.Printf("已连接到 Elasticsearch (%s)\n", addresses)
 
-		trans := translator.NewBuiltinTranslator(client)
 		fmtr, _ := formatter.New("table")
-		exec := executor.New(trans, fmtr, os.Stdout, client)
+		exec := executor.New(fmtr, os.Stdout, client)
 
 		r := repl.New(exec, client, addresses)
 		r.Run()

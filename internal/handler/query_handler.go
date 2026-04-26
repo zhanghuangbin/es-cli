@@ -1,4 +1,4 @@
-package translator
+package handler
 
 import (
 	"bytes"
@@ -8,14 +8,17 @@ import (
 	"io"
 
 	"github.com/elastic/go-elasticsearch/v8"
+	"github.com/zhanghuangbin/es-cli/internal/types"
 )
 
-type BuiltinTranslator struct {
+// QueryHandler 处理 SELECT 及其他未识别的 SQL 语句，通过 ES _sql API 执行。
+type QueryHandler struct {
 	client *elasticsearch.Client
 }
 
-func NewBuiltinTranslator(client *elasticsearch.Client) *BuiltinTranslator {
-	return &BuiltinTranslator{client: client}
+// NewQueryHandler 创建一个新的 QueryHandler 实例。
+func NewQueryHandler(client *elasticsearch.Client) *QueryHandler {
+	return &QueryHandler{client: client}
 }
 
 type sqlRequest struct {
@@ -32,15 +35,15 @@ type sqlColumn struct {
 	Type string `json:"type"`
 }
 
-func (t *BuiltinTranslator) Execute(ctx context.Context, sql string) (*Result, error) {
+func (h *QueryHandler) Execute(ctx context.Context, sql string) (*types.Result, error) {
 	body, err := json.Marshal(sqlRequest{Query: sql})
 	if err != nil {
 		return nil, fmt.Errorf("序列化 SQL 请求失败: %w", err)
 	}
 
-	res, err := t.client.SQL.Query(
+	res, err := h.client.SQL.Query(
 		bytes.NewReader(body),
-		t.client.SQL.Query.WithContext(ctx),
+		h.client.SQL.Query.WithContext(ctx),
 	)
 	if err != nil {
 		return nil, fmt.Errorf("执行 SQL 失败: %w", err)
@@ -53,8 +56,8 @@ func (t *BuiltinTranslator) Execute(ctx context.Context, sql string) (*Result, e
 	}
 
 	if res.IsError() {
-		return &Result{
-			Meta: Meta{Status: res.StatusCode, Message: string(respBody)},
+		return &types.Result{
+			Meta: types.Meta{Status: res.StatusCode, Message: string(respBody)},
 		}, fmt.Errorf("ES 错误 [%d]: %s", res.StatusCode, respBody)
 	}
 
@@ -73,8 +76,8 @@ func (t *BuiltinTranslator) Execute(ctx context.Context, sql string) (*Result, e
 		rows[i] = row
 	}
 
-	return &Result{
-		Meta:    Meta{Status: res.StatusCode},
+	return &types.Result{
+		Meta:    types.Meta{Status: res.StatusCode},
 		Columns: columns,
 		Rows:    rows,
 	}, nil

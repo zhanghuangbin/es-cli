@@ -1,4 +1,4 @@
-package executor
+package handler
 
 import (
 	"context"
@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	"github.com/elastic/go-elasticsearch/v8"
-	"github.com/zhanghuangbin/es-cli/internal/translator"
+	"github.com/zhanghuangbin/es-cli/internal/types"
 	"github.com/zhanghuangbin/es-cli/pkg/es"
 )
 
@@ -32,7 +32,7 @@ var reDropTable = regexp.MustCompile(
 // 支持的语法：
 //
 //	DROP TABLE table_name
-func (h *DropHandler) Execute(ctx context.Context, sql string) (*translator.Result, error) {
+func (h *DropHandler) Execute(ctx context.Context, sql string) (*types.Result, error) {
 	tableName, err := parseDropTable(sql)
 	if err != nil {
 		return nil, err
@@ -45,8 +45,8 @@ func (h *DropHandler) Execute(ctx context.Context, sql string) (*translator.Resu
 		return nil, err
 	}
 
-	return &translator.Result{
-		Meta: translator.Meta{
+	return &types.Result{
+		Meta: types.Meta{
 			Status:  200,
 			Message: fmt.Sprintf("索引 %s 删除成功", tableName),
 		},

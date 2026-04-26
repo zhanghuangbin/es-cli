@@ -1,4 +1,4 @@
-package executor
+package handler
 
 import (
 	"context"
@@ -9,7 +9,7 @@ import (
 	"strings"
 
 	"github.com/elastic/go-elasticsearch/v8"
-	"github.com/zhanghuangbin/es-cli/internal/translator"
+	"github.com/zhanghuangbin/es-cli/internal/types"
 	"github.com/zhanghuangbin/es-cli/pkg/es"
 )
 
@@ -45,7 +45,7 @@ var reInsertInto = regexp.MustCompile(
 //   - 数字：整数或浮点数，如 42, 3.14
 //   - 布尔值：true / false（不区分大小写）
 //   - 空值：null / NULL
-func (h *InsertHandler) Execute(ctx context.Context, sql string) (*translator.Result, error) {
+func (h *InsertHandler) Execute(ctx context.Context, sql string) (*types.Result, error) {
 	tableName, _, doc, err := parseInsertInto(sql)
 	if err != nil {
 		return nil, err

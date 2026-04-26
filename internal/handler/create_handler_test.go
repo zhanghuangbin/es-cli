@@ -1,15 +1,15 @@
-package executor
+package handler
 
 import "testing"
 
 func TestParseCreateTable(t *testing.T) {
 	tests := []struct {
-		name          string
-		sql           string
-		wantTable     string
-		wantColCount  int
-		wantSettings  bool
-		wantErr       bool
+		name         string
+		sql          string
+		wantTable    string
+		wantColCount int
+		wantSettings bool
+		wantErr      bool
 	}{
 		{
 			name:         "basic two columns",
@@ -203,10 +203,10 @@ func TestParseColumns(t *testing.T) {
 
 func TestParseSettings(t *testing.T) {
 	tests := []struct {
-		name     string
-		input    string
-		wantMap  map[string]string
-		wantErr  bool
+		name    string
+		input   string
+		wantMap map[string]string
+		wantErr bool
 	}{
 		{
 			name:  "single setting",
@@ -219,7 +219,7 @@ func TestParseSettings(t *testing.T) {
 			name:  "multiple settings",
 			input: "number_of_shards=3, number_of_replicas=1",
 			wantMap: map[string]string{
-				"number_of_shards":    "3",
+				"number_of_shards":   "3",
 				"number_of_replicas": "1",
 			},
 		},

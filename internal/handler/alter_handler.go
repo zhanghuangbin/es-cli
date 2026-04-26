@@ -1,4 +1,4 @@
-package executor
+package handler
 
 import (
 	"context"
@@ -8,7 +8,7 @@ import (
 	"strings"
 
 	"github.com/elastic/go-elasticsearch/v8"
-	"github.com/zhanghuangbin/es-cli/internal/translator"
+	"github.com/zhanghuangbin/es-cli/internal/types"
 	"github.com/zhanghuangbin/es-cli/pkg/es"
 )
 
@@ -40,7 +40,7 @@ var reAlterRename = regexp.MustCompile(
 //
 //	ALTER INDEX <索引名> SETTINGS (<键1>=<值1>, <键2>=<值2>, ...)
 //	ALTER TABLE <旧表名> RENAME TO <新表名>
-func (h *AlterHandler) Execute(ctx context.Context, sql string) (*translator.Result, error) {
+func (h *AlterHandler) Execute(ctx context.Context, sql string) (*types.Result, error) {
 	// 尝试匹配 ALTER INDEX ... SETTINGS (...)
 	if matches := reAlterSettings.FindStringSubmatch(sql); matches != nil {
 		return h.executeAlterSettings(ctx, matches[1], matches[2])
@@ -56,7 +56,7 @@ func (h *AlterHandler) Execute(ctx context.Context, sql string) (*translator.Res
 
 // executeAlterSettings 执行 ALTER INDEX ... SETTINGS 操作。
 // 调用 ES PUT /{index}/_settings API 更新索引设置。
-func (h *AlterHandler) executeAlterSettings(ctx context.Context, indexName, settingsPart string) (*translator.Result, error) {
+func (h *AlterHandler) executeAlterSettings(ctx context.Context, indexName, settingsPart string) (*types.Result, error) {
 	indexName = strings.TrimSpace(indexName)
 	settingsPart = strings.TrimSpace(settingsPart)
 
@@ -91,8 +91,8 @@ func (h *AlterHandler) executeAlterSettings(ctx context.Context, indexName, sett
 	}
 
 	msg := fmt.Sprintf("索引 %s 设置更新成功", indexName)
-	return &translator.Result{
-		Meta: translator.Meta{
+	return &types.Result{
+		Meta: types.Meta{
 			Status:  200,
 			Message: msg,
 		},
@@ -104,7 +104,7 @@ func (h *AlterHandler) executeAlterSettings(ctx context.Context, indexName, sett
 // executeAlterRename 执行 ALTER TABLE ... RENAME TO 操作。
 // 通过 ES POST /_aliases API 为旧索引添加别名，实现逻辑重命名。
 // 注意：这不是真正的重命名，而是添加别名。
-func (h *AlterHandler) executeAlterRename(ctx context.Context, oldName, newName string) (*translator.Result, error) {
+func (h *AlterHandler) executeAlterRename(ctx context.Context, oldName, newName string) (*types.Result, error) {
 	oldName = strings.TrimSpace(oldName)
 	newName = strings.TrimSpace(newName)
 
@@ -138,8 +138,8 @@ func (h *AlterHandler) executeAlterRename(ctx context.Context, oldName, newName 
 	}
 
 	msg := fmt.Sprintf("已为索引 %s 添加别名 %s", oldName, newName)
-	return &translator.Result{
-		Meta: translator.Meta{
+	return &types.Result{
+		Meta: types.Meta{
 			Status:  200,
 			Message: msg,
 		},

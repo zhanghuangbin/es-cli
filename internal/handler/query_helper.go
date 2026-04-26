@@ -1,17 +1,17 @@
-package executor
+package handler
 
 import (
 	"context"
 	"encoding/json"
 	"fmt"
 	"github.com/elastic/go-elasticsearch/v8"
-	"github.com/zhanghuangbin/es-cli/internal/translator"
+	"github.com/zhanghuangbin/es-cli/internal/types"
 	"github.com/zhanghuangbin/es-cli/pkg/es"
 	"sort"
 )
 
 // fetchDocByID 根据文档 ID 回查单条文档，返回包含 _id 和 _source 所有字段的 Result。
-func fetchDocByID(ctx context.Context, client *elasticsearch.Client, index, docID string) (*translator.Result, error) {
+func fetchDocByID(ctx context.Context, client *elasticsearch.Client, index, docID string) (*types.Result, error) {
 	path := fmt.Sprintf("/%s/_doc/%s", index, docID)
 	respBody, err := es.DoRequest(ctx, client, "GET", path, nil)
 	if err != nil {
@@ -30,7 +30,7 @@ func fetchDocByID(ctx context.Context, client *elasticsearch.Client, index, docI
 }
 
 // buildResultFromSource 将单条文档的 _id 和 _source 构造为 Result。
-func buildResultFromSource(id string, source map[string]any) *translator.Result {
+func buildResultFromSource(id string, source map[string]any) *types.Result {
 	// 字段名排序，保证输出稳定
 	columns := make([]string, 0, len(source))
 	for k := range source {
@@ -46,8 +46,8 @@ func buildResultFromSource(id string, source map[string]any) *translator.Result 
 		row[i+1] = source[col]
 	}
 
-	return &translator.Result{
-		Meta: translator.Meta{
+	return &types.Result{
+		Meta: types.Meta{
 			Status:  200,
 			Message: "操作成功",
 		},
