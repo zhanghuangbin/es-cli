@@ -1,46 +1,30 @@
-# es-cli
+# es-cli 模块总纲
 
-> **给 Agent 执行者：** 必须渐进式披露信息，按需阅读。
+> **给 Agent 执行者：** 本文件是项目的导航索引，按需阅读对应模块文档。
 
-## 架构
+## 架构概览
 
-分层设计，数据流为：**用户输入 → REPL → Executor → Translator → ES Client → Formatter → 终端输出**
+数据流：**用户输入 → REPL → Executor → Handler → ES Client → Formatter → 终端输出**
 
 ```
-cmd/es-cli/main.go          # 程序入口，仅调用 cmd.Execute()
-internal/cmd/               # cobra的各种命令
-internal/repl/              # REPL 交互层（go-prompt）
-internal/executor/           # SQL 执行调度，接收 SQL 调用 Translator，结果传给 Formatter
-internal/translator/         # SQL 执行的抽象层，将用户的查询请求，翻译成查询的语言
-internal/formatter/          # 输出格式化
-pkg/es/                      # ES 客户端封装（可被外部项目导入）
+cmd/es-cli/          程序入口
+internal/cmd/        CLI 参数定义、启动流程
+internal/repl/       REPL 交互层
+internal/executor/   SQL 调度（按 SQLType 分发到 Handler）
+internal/handler/    SQL 具体执行（每种 SQL 类型一个 Handler）
+internal/types/      共享类型（SQLType 枚举、Result 结构体）
+internal/formatter/  输出格式化（table、json）
+pkg/es/              ES 客户端封装（可外部导入）
 ```
 
-### 核心接口
+## 模块索引
 
-- **`Translator`**（`internal/translator/translator.go`）：SQL 执行的抽象层。MVP 阶段只有 `BuiltinTranslator`（直接调用 ES SQL API）。后续扩展时实现 `CustomTranslator`（SQL Parser → ES DSL），无需修改上层代码。
-- **`Formatter`**（`internal/formatter/formatter.go`）：输出格式化抽象。通过 `New(format)` 工厂函数创建，目前仅支持 `table`，`json` 和 `csv` 预留了接口但未实现。
-
-### 分层原则
-
-- `cmd/es-cli/` — 尽量薄，只做入口
-- `internal/` — 所有业务逻辑，不可被外部导入
-- `pkg/` — 通用能力，可复用
-
-## 技术栈
-
-| 模块 | 库 |
-|---|---|
-| CLI 框架 | `github.com/spf13/cobra` |
-| REPL 交互 | `github.com/c-bata/go-prompt` |
-| ES 客户端 | `github.com/elastic/go-elasticsearch/v8` |
-| 表格输出 | `github.com/jedib0t/go-pretty/v6` |
-| SQL 解析（未来） | `github.com/xwb1989/sqlparser`（计划中） |
-
-
-## 阅读指南索引
-
-### 核心模块
-
-| 模块 | 指南 | 路径 | 说明 |
-|------|------|------|------|
+| 模块 | 指南 | 一句话说明 |
+|------|------|-----------|
+| cmd | [cmd.md](cmd.md) | 入口 + CLI 参数（cobra） |
+| repl | [repl.md](repl.md) | REPL 交互、补全、历史 |
+| executor | [executor.md](executor.md) | SQL 调度器 |
+| handler | [handler.md](handler.md) | 7 种 SQL Handler 实现 |
+| types | [types.md](types.md) | SQLType、Result、Meta |
+| formatter | [formatter.md](formatter.md) | 输出格式化（table/json） |
+| es | [es.md](es.md) | ES 客户端 + 通用请求函数 |
