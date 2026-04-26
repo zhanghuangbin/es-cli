@@ -1,16 +1,13 @@
 package cmd
 
 import (
-	"bufio"
 	"fmt"
 	"os"
-	"strings"
 
 	"github.com/spf13/cobra"
 	"github.com/zhanghuangbin/es-cli/internal/executor"
-	"github.com/zhanghuangbin/es-cli/internal/formatter"
+	replFmt "github.com/zhanghuangbin/es-cli/internal/formatter/repl"
 	"github.com/zhanghuangbin/es-cli/internal/repl"
-	"github.com/zhanghuangbin/es-cli/pkg/es"
 )
 
 var (
@@ -26,42 +23,14 @@ var rootCmd = &cobra.Command{
 	Short: "基于 SQL 的 Elasticsearch CLI",
 	Long:  "一个交互式 REPL 工具，让你通过 SQL 语法查询和管理 Elasticsearch。",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		if passwordStdin {
-			if password != "" {
-				return fmt.Errorf("错误: --password 和 --password-stdin 不能同时使用")
-			}
-			scanner := bufio.NewScanner(os.Stdin)
-			if scanner.Scan() {
-				password = strings.TrimSpace(scanner.Text())
-			}
-			if err := scanner.Err(); err != nil {
-				return fmt.Errorf("读取密码失败: %w", err)
-			}
-		}
-
-		client, err := es.NewClient(es.Config{
-			Addresses: addresses,
-			Username:  username,
-			Password:  password,
-			CACert:    caCert,
-		})
+		client, err := newESClient()
 		if err != nil {
-			return fmt.Errorf("连接 ES 失败: %w", err)
-		}
-
-		res, err := client.Ping()
-		if err != nil {
-			return fmt.Errorf("ping ES 失败: %w", err)
-		}
-		defer res.Body.Close()
-
-		if res.IsError() {
-			return fmt.Errorf("ES ping 失败: %s", res.String())
+			return err
 		}
 
 		fmt.Printf("已连接到 Elasticsearch (%s)\n", addresses)
 
-		fmtr, _ := formatter.New("table")
+		fmtr, _ := replFmt.New("table")
 		exec := executor.New(fmtr, os.Stdout, client)
 
 		r := repl.New(exec, client, addresses)

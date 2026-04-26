@@ -12,6 +12,12 @@ es-cli 是一个基于 Go 的 Elasticsearch 交互式 CLI 工具，用户通过 
 # 构建
 go build -o ./_output/es-cli.exe ./cmd/es-cli/
 
+# 带版本信息构建
+go build -ldflags "-X github.com/zhanghuangbin/es-cli/internal/version.Version=v0.1.0 \
+  -X github.com/zhanghuangbin/es-cli/internal/version.GitCommit=$(git rev-parse --short HEAD) \
+  -X github.com/zhanghuangbin/es-cli/internal/version.BuildDate=$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+  -o ./_output/es-cli.exe ./cmd/es-cli/
+
 # 运行（连接本地 ES）
 go run cmd/es-cli/main.go --address http://localhost:9200
 

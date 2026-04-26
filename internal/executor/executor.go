@@ -6,20 +6,20 @@ import (
 	"io"
 
 	"github.com/elastic/go-elasticsearch/v8"
-	"github.com/zhanghuangbin/es-cli/internal/formatter"
+	"github.com/zhanghuangbin/es-cli/internal/formatter/repl"
 	"github.com/zhanghuangbin/es-cli/internal/handler"
 	"github.com/zhanghuangbin/es-cli/internal/types"
 )
 
 // Executor 是 SQL 执行调度器，根据 SQL 类型分发到对应的 Handler。
 type Executor struct {
-	formatter formatter.Formatter
+	formatter repl.Formatter
 	output    io.Writer
 	handlers  map[types.SQLType]handler.Handler
 }
 
 // New 创建一个新的 Executor 实例，内部注册所有 Handler。
-func New(f formatter.Formatter, output io.Writer, client *elasticsearch.Client) *Executor {
+func New(f repl.Formatter, output io.Writer, client *elasticsearch.Client) *Executor {
 	handlers := map[types.SQLType]handler.Handler{
 		types.SQLTypeSelect: handler.NewQueryHandler(client),
 		types.SQLTypeInsert: handler.NewInsertHandler(client),
@@ -38,7 +38,7 @@ func New(f formatter.Formatter, output io.Writer, client *elasticsearch.Client) 
 }
 
 // SetFormatter 动态切换输出格式化器。
-func (e *Executor) SetFormatter(f formatter.Formatter) {
+func (e *Executor) SetFormatter(f repl.Formatter) {
 	e.formatter = f
 }
 

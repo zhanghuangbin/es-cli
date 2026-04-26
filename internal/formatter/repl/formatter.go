@@ -1,4 +1,4 @@
-package formatter
+package repl
 
 import (
 	"fmt"
@@ -18,6 +18,6 @@ func New(format string) (Formatter, error) {
 	case "json":
 		return &JsonFormatter{}, nil
 	default:
-		return nil, fmt.Errorf("未知格式: %s（可选: table, json, csv）", format)
+		return nil, fmt.Errorf("未知格式: %s（可选: table, json）", format)
 	}
 }

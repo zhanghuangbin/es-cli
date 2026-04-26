@@ -1,4 +1,4 @@
-package formatter
+package repl
 
 import (
 	"fmt"
@@ -37,19 +37,16 @@ func (f *TableFormatter) Format(result *types.Result, w io.Writer) error {
 	t.SetStyle(table.StyleLight)
 	t.Render()
 
-	// 打印统计信息
 	f.renderStat(result.Meta.Stat, w)
 
 	return nil
 }
 
-// renderStat 在表格下方打印统计信息。
 func (f *TableFormatter) renderStat(stat map[string]any, w io.Writer) {
 	if len(stat) == 0 {
 		return
 	}
 
-	// 按 key 排序，保证输出稳定
 	keys := make([]string, 0, len(stat))
 	for k := range stat {
 		keys = append(keys, k)

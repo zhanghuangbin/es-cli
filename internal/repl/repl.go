@@ -8,7 +8,7 @@ import (
 	"github.com/c-bata/go-prompt"
 	"github.com/elastic/go-elasticsearch/v8"
 	"github.com/zhanghuangbin/es-cli/internal/executor"
-	"github.com/zhanghuangbin/es-cli/internal/formatter"
+	replFmt "github.com/zhanghuangbin/es-cli/internal/formatter/repl"
 )
 
 type REPL struct {
@@ -148,7 +148,7 @@ DDL/DML 示例:
 }
 
 func (r *REPL) setFormat(format string) {
-	f, err := formatter.New(format)
+	f, err := replFmt.New(format)
 	if err != nil {
 		fmt.Printf("错误: %v\n", err)
 		return
