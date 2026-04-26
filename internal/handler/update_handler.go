@@ -57,15 +57,32 @@ func (h *UpdateHandler) Execute(ctx context.Context, sql string) (*types.Result,
 
 	// 调用 ES API 执行更新
 	path := fmt.Sprintf("/%s/_update_by_query", tableName)
-	_, err = es.DoRequest(ctx, h.client, "POST", path, strings.NewReader(body))
+	respBody, err := es.DoRequest(ctx, h.client, "POST", path, strings.NewReader(body))
 	if err != nil {
 		return nil, err
+	}
+
+	// 解析 ES _update_by_query 响应中的统计信息
+	var esResp struct {
+		Took     int   `json:"took"`
+		Updated  int   `json:"updated"`
+		Total    int   `json:"total"`
+		Failures []any `json:"failures"`
+	}
+	if err := json.Unmarshal(respBody, &esResp); err != nil {
+		return nil, fmt.Errorf("解析 ES 响应失败: %w", err)
 	}
 
 	return &types.Result{
 		Meta: types.Meta{
 			Status:  200,
 			Message: "更新完成",
+			Stat: map[string]any{
+				"更新行数":   esResp.Updated,
+				"匹配总数":   esResp.Total,
+				"耗时(ms)": esResp.Took,
+				"失败数":    len(esResp.Failures),
+			},
 		},
 		Columns: []string{"结果"},
 		Rows:    [][]any{{"更新完成"}},

@@ -56,15 +56,32 @@ func (h *DeleteHandler) Execute(ctx context.Context, sql string) (*types.Result,
 
 	// 调用 ES API 执行删除
 	path := fmt.Sprintf("/%s/_delete_by_query", tableName)
-	_, err = es.DoRequest(ctx, h.client, "POST", path, strings.NewReader(body))
+	respBody, err := es.DoRequest(ctx, h.client, "POST", path, strings.NewReader(body))
 	if err != nil {
 		return nil, err
+	}
+
+	// 解析 ES _delete_by_query 响应中的统计信息
+	var esResp struct {
+		Took     int   `json:"took"`
+		Deleted  int   `json:"deleted"`
+		Total    int   `json:"total"`
+		Failures []any `json:"failures"`
+	}
+	if err := json.Unmarshal(respBody, &esResp); err != nil {
+		return nil, fmt.Errorf("解析 ES 响应失败: %w", err)
 	}
 
 	return &types.Result{
 		Meta: types.Meta{
 			Status:  200,
 			Message: "删除完成",
+			Stat: map[string]any{
+				"删除行数":   esResp.Deleted,
+				"匹配总数":   esResp.Total,
+				"耗时(ms)": esResp.Took,
+				"失败数":    len(esResp.Failures),
+			},
 		},
 		Columns: []string{"结果"},
 		Rows:    [][]any{{"删除完成"}},

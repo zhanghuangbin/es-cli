@@ -64,9 +64,12 @@ func (h *InsertHandler) Execute(ctx context.Context, sql string) (*types.Result,
 		return nil, err
 	}
 
-	// 解析 ES 响应，提取 _id
+	// 解析 ES 响应，提取 _id 和 result
 	var esResp struct {
-		ID string `json:"_id"`
+		ID      string `json:"_id"`
+		Result  string `json:"result"`
+		Version int    `json:"_version"`
+		Index   string `json:"_index"`
 	}
 	if err := json.Unmarshal(respBody, &esResp); err != nil {
 		return nil, fmt.Errorf("解析 ES 响应失败: %w", err)
@@ -78,6 +81,12 @@ func (h *InsertHandler) Execute(ctx context.Context, sql string) (*types.Result,
 		return nil, err
 	}
 	result.Meta.Message = "文档插入成功"
+	result.Meta.Stat = map[string]any{
+		"操作":     esResp.Result,
+		"_id":    esResp.ID,
+		"_index": esResp.Index,
+		"影响行数":   1,
+	}
 
 	return result, nil
 }

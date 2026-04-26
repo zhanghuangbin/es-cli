@@ -85,9 +85,17 @@ func (h *AlterHandler) executeAlterSettings(ctx context.Context, indexName, sett
 
 	// 调用 ES API 更新设置
 	path := fmt.Sprintf("/%s/_settings", indexName)
-	_, err = es.DoRequest(ctx, h.client, "PUT", path, strings.NewReader(string(jsonBytes)))
+	respBody, err := es.DoRequest(ctx, h.client, "PUT", path, strings.NewReader(string(jsonBytes)))
 	if err != nil {
 		return nil, err
+	}
+
+	// 解析 ES 响应中的确认信息
+	var esResp struct {
+		Acknowledged bool `json:"acknowledged"`
+	}
+	if err := json.Unmarshal(respBody, &esResp); err != nil {
+		return nil, fmt.Errorf("解析 ES 响应失败: %w", err)
 	}
 
 	msg := fmt.Sprintf("索引 %s 设置更新成功", indexName)
@@ -95,6 +103,10 @@ func (h *AlterHandler) executeAlterSettings(ctx context.Context, indexName, sett
 		Meta: types.Meta{
 			Status:  200,
 			Message: msg,
+			Stat: map[string]any{
+				"索引名":          indexName,
+				"acknowledged": esResp.Acknowledged,
+			},
 		},
 		Columns: []string{"结果"},
 		Rows:    [][]any{{msg}},
@@ -132,9 +144,17 @@ func (h *AlterHandler) executeAlterRename(ctx context.Context, oldName, newName 
 	}
 
 	// 调用 ES API 添加别名
-	_, err = es.DoRequest(ctx, h.client, "POST", "/_aliases", strings.NewReader(string(jsonBytes)))
+	respBody, err := es.DoRequest(ctx, h.client, "POST", "/_aliases", strings.NewReader(string(jsonBytes)))
 	if err != nil {
 		return nil, err
+	}
+
+	// 解析 ES 响应中的确认信息
+	var esResp struct {
+		Acknowledged bool `json:"acknowledged"`
+	}
+	if err := json.Unmarshal(respBody, &esResp); err != nil {
+		return nil, fmt.Errorf("解析 ES 响应失败: %w", err)
 	}
 
 	msg := fmt.Sprintf("已为索引 %s 添加别名 %s", oldName, newName)
@@ -142,6 +162,11 @@ func (h *AlterHandler) executeAlterRename(ctx context.Context, oldName, newName 
 		Meta: types.Meta{
 			Status:  200,
 			Message: msg,
+			Stat: map[string]any{
+				"原索引名":         oldName,
+				"别名":           newName,
+				"acknowledged": esResp.Acknowledged,
+			},
 		},
 		Columns: []string{"结果"},
 		Rows:    [][]any{{msg}},

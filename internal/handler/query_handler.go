@@ -77,7 +77,12 @@ func (h *QueryHandler) Execute(ctx context.Context, sql string) (*types.Result, 
 	}
 
 	return &types.Result{
-		Meta:    types.Meta{Status: res.StatusCode},
+		Meta: types.Meta{
+			Status: res.StatusCode,
+			Stat: map[string]any{
+				"返回行数": len(rows),
+			},
+		},
 		Columns: columns,
 		Rows:    rows,
 	}, nil

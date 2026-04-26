@@ -68,15 +68,29 @@ func (h *CreateHandler) Execute(ctx context.Context, sql string) (*types.Result,
 
 	// 调用 ES API 创建索引
 	path := fmt.Sprintf("/%s", tableName)
-	_, err = es.DoRequest(ctx, h.client, "PUT", path, strings.NewReader(body))
+	respBody, err := es.DoRequest(ctx, h.client, "PUT", path, strings.NewReader(body))
 	if err != nil {
 		return nil, err
+	}
+
+	// 解析 ES 响应中的确认信息
+	var esResp struct {
+		Acknowledged       bool `json:"acknowledged"`
+		ShardsAcknowledged bool `json:"shards_acknowledged"`
+	}
+	if err := json.Unmarshal(respBody, &esResp); err != nil {
+		return nil, fmt.Errorf("解析 ES 响应失败: %w", err)
 	}
 
 	return &types.Result{
 		Meta: types.Meta{
 			Status:  200,
 			Message: fmt.Sprintf("索引 %s 创建成功", tableName),
+			Stat: map[string]any{
+				"索引名":                 tableName,
+				"acknowledged":        esResp.Acknowledged,
+				"shards_acknowledged": esResp.ShardsAcknowledged,
+			},
 		},
 		Columns: []string{"结果"},
 		Rows:    [][]any{{fmt.Sprintf("索引 %s 创建成功", tableName)}},
