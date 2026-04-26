@@ -1,5 +1,6 @@
 .idea
 .worktrees
+worktrees
 *.exe
 
 _output
