@@ -104,9 +104,9 @@ func (r *REPL) handleBuiltinCommand(input string) {
 		r.setFormat(parts[1])
 	case ".indices":
 		r.showIndices()
-	case ".schema":
+	case ".desc":
 		if len(parts) < 2 {
-			fmt.Println("用法: .schema <索引名>")
+			fmt.Println("用法: .desc <索引名>")
 			return
 		}
 		r.showSchema(parts[1])
@@ -124,7 +124,7 @@ func (r *REPL) showHelp() {
   .ping            测试 ES 连接是否正常
   .format <类型>   设置输出格式 (table, json*, csv*)
   .indices         列出所有索引
-  .schema <索引名> 显示索引 mapping
+  .desc <索引名>    显示索引 mapping
   .exit            退出 es-cli
   Ctrl+D           退出 es-cli
 

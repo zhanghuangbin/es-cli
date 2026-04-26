@@ -46,7 +46,7 @@ var reInsertInto = regexp.MustCompile(
 //   - 布尔值：true / false（不区分大小写）
 //   - 空值：null / NULL
 func (h *InsertHandler) Execute(ctx context.Context, sql string) (*translator.Result, error) {
-	tableName, doc, err := parseInsertInto(sql)
+	tableName, _, doc, err := parseInsertInto(sql)
 	if err != nil {
 		return nil, err
 	}
@@ -59,27 +59,35 @@ func (h *InsertHandler) Execute(ctx context.Context, sql string) (*translator.Re
 
 	// 调用 ES API 插入文档
 	path := fmt.Sprintf("/%s/_doc", tableName)
-	_, err = es.DoRequest(ctx, h.client, "POST", path, strings.NewReader(string(jsonBytes)))
+	respBody, err := es.DoRequest(ctx, h.client, "POST", path, strings.NewReader(string(jsonBytes)))
 	if err != nil {
 		return nil, err
 	}
 
-	return &translator.Result{
-		Meta: translator.Meta{
-			Status:  200,
-			Message: "文档插入成功",
-		},
-		Columns: []string{"结果"},
-		Rows:    [][]any{{"文档插入成功"}},
-	}, nil
+	// 解析 ES 响应，提取 _id
+	var esResp struct {
+		ID string `json:"_id"`
+	}
+	if err := json.Unmarshal(respBody, &esResp); err != nil {
+		return nil, fmt.Errorf("解析 ES 响应失败: %w", err)
+	}
+
+	// 根据 _id 回查插入的文档
+	result, err := fetchDocByID(ctx, h.client, tableName, esResp.ID)
+	if err != nil {
+		return nil, err
+	}
+	result.Meta.Message = "文档插入成功"
+
+	return result, nil
 }
 
 // parseInsertInto 解析 INSERT INTO SQL 语句。
-// 返回表名和文档（列名到值的映射）。
-func parseInsertInto(sql string) (string, map[string]any, error) {
+// 返回表名、有序列名列表和文档（列名到值的映射）。
+func parseInsertInto(sql string) (string, []string, map[string]any, error) {
 	matches := reInsertInto.FindStringSubmatch(sql)
 	if matches == nil {
-		return "", nil, fmt.Errorf("SQL 语法错误：无法解析 INSERT INTO 语句。\n期望格式：INSERT INTO <表名> (<列名1>, <列名2>, ...) VALUES (<值1>, <值2>, ...)")
+		return "", nil, nil, fmt.Errorf("SQL 语法错误：无法解析 INSERT INTO 语句。\n期望格式：INSERT INTO <表名> (<列名1>, <列名2>, ...) VALUES (<值1>, <值2>, ...)")
 	}
 
 	tableName := strings.TrimSpace(matches[1])
@@ -87,24 +95,24 @@ func parseInsertInto(sql string) (string, map[string]any, error) {
 	valuesPart := strings.TrimSpace(matches[3])
 
 	if tableName == "" {
-		return "", nil, fmt.Errorf("SQL 语法错误：缺少表名")
+		return "", nil, nil, fmt.Errorf("SQL 语法错误：缺少表名")
 	}
 
 	// 解析列名
 	columns, err := parseInsertColumns(columnsPart)
 	if err != nil {
-		return "", nil, err
+		return "", nil, nil, err
 	}
 
 	// 解析值
 	values, err := parseInsertValues(valuesPart)
 	if err != nil {
-		return "", nil, err
+		return "", nil, nil, err
 	}
 
 	// 列数和值数必须一致
 	if len(columns) != len(values) {
-		return "", nil, fmt.Errorf("SQL 语法错误：列数(%d)与值数(%d)不匹配", len(columns), len(values))
+		return "", nil, nil, fmt.Errorf("SQL 语法错误：列数(%d)与值数(%d)不匹配", len(columns), len(values))
 	}
 
 	// 构造文档
@@ -113,7 +121,7 @@ func parseInsertInto(sql string) (string, map[string]any, error) {
 		doc[col] = values[i]
 	}
 
-	return tableName, doc, nil
+	return tableName, columns, doc, nil
 }
 
 // parseInsertColumns 解析 INSERT INTO 的列名部分，如 "name, age, active"。

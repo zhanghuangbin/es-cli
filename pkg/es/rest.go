@@ -26,6 +26,7 @@ func DoRequest(ctx context.Context, client *elasticsearch.Client, method, path s
 	if err != nil {
 		return nil, fmt.Errorf("构造 HTTP 请求失败: %w", err)
 	}
+	req.Header.Set("Content-Type", "application/json")
 
 	resp, err := client.Transport.Perform(req)
 	if err != nil {
