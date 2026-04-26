@@ -30,7 +30,7 @@ var rootCmd = &cobra.Command{
 
 		fmt.Printf("已连接到 Elasticsearch (%s)\n", addresses)
 
-		fmtr, _ := replFmt.New("table")
+		fmtr, _ := replFmt.NewFormatter("table")
 		exec := executor.New(fmtr, os.Stdout, client)
 
 		r := repl.New(exec, client, addresses)

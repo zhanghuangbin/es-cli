@@ -8,12 +8,16 @@ import (
 	"github.com/zhanghuangbin/es-cli/internal/types"
 )
 
-func formatCSV(result *types.Result, w io.Writer, fields []string) error {
+type csvFormatter struct {
+	fields []string
+}
+
+func (f *csvFormatter) Format(result *types.Result, w io.Writer) error {
 	if len(result.Columns) == 0 {
 		return nil
 	}
 
-	cols, indices := filterColumns(result.Columns, fields)
+	cols, indices := filterColumns(result.Columns, f.fields)
 
 	writer := csv.NewWriter(w)
 	defer writer.Flush()

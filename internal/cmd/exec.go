@@ -67,12 +67,17 @@ var execCmd = &cobra.Command{
 
 		result.Meta.Type = sqlType
 
-		return cmdfmt.Format(result, os.Stdout, cmdfmt.Options{
+		fmtr, err := cmdfmt.NewFormatter(cmdfmt.Options{
 			Format:   execFormat,
 			JSONPath: execJSONPath,
 			Template: execTemplate,
 			Fields:   execFields,
 		})
+		if err != nil {
+			return err
+		}
+
+		return fmtr.Format(result, os.Stdout)
 	},
 }
 

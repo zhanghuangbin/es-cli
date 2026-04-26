@@ -10,9 +10,13 @@ import (
 	"github.com/zhanghuangbin/es-cli/internal/types"
 )
 
-func formatJSON(result *types.Result, w io.Writer, jp string) error {
-	if jp != "" {
-		return formatJSONPath(result, w, jp)
+type jsonFormatter struct {
+	jsonPath string
+}
+
+func (f *jsonFormatter) Format(result *types.Result, w io.Writer) error {
+	if f.jsonPath != "" {
+		return f.formatJSONPath(result, w)
 	}
 
 	if result.Source != "" {
@@ -32,7 +36,7 @@ func formatJSON(result *types.Result, w io.Writer, jp string) error {
 	return enc.Encode(data)
 }
 
-func formatJSONPath(result *types.Result, w io.Writer, jp string) error {
+func (f *jsonFormatter) formatJSONPath(result *types.Result, w io.Writer) error {
 	var raw any
 	if result.Source != "" {
 		if err := json.Unmarshal([]byte(result.Source), &raw); err != nil {
@@ -45,7 +49,7 @@ func formatJSONPath(result *types.Result, w io.Writer, jp string) error {
 		}
 	}
 
-	extracted, err := jsonpath.Get(jp, raw)
+	extracted, err := jsonpath.Get(f.jsonPath, raw)
 	if err != nil {
 		return fmt.Errorf("JSONPath 提取失败: %w", err)
 	}

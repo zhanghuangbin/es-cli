@@ -148,7 +148,7 @@ DDL/DML 示例:
 }
 
 func (r *REPL) setFormat(format string) {
-	f, err := replFmt.New(format)
+	f, err := replFmt.NewFormatter(format)
 	if err != nil {
 		fmt.Printf("错误: %v\n", err)
 		return

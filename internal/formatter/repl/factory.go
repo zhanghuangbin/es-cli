@@ -2,16 +2,12 @@ package repl
 
 import (
 	"fmt"
-	"io"
 
-	"github.com/zhanghuangbin/es-cli/internal/types"
+	"github.com/zhanghuangbin/es-cli/internal/formatter"
 )
 
-type Formatter interface {
-	Format(result *types.Result, w io.Writer) error
-}
-
-func New(format string) (Formatter, error) {
+// NewFormatter 根据格式名称创建对应的 REPL 格式化器。
+func NewFormatter(format string) (formatter.Formatter, error) {
 	switch format {
 	case "table":
 		return &TableFormatter{}, nil
