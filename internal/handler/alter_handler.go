@@ -31,7 +31,7 @@ var reAlterSettings = regexp.MustCompile(
 // reAlterRename 匹配 ALTER TABLE <old> RENAME TO <new> 语句。
 // 捕获组：1=旧表名, 2=新表名
 var reAlterRename = regexp.MustCompile(
-	`(?i)^\s*ALTER\s+TABLE\s+(\S+)\s+RENAME\s+TO\s+(\S+)\s*;?\s*$`,
+	`(?i)^\s*ALTER\s+TABLE\s+(\S+)\s+RENAME\s+TO\s+(\S+?)\s*;?\s*$`,
 )
 
 // Execute 解析 ALTER 语句并执行对应的 ES API 操作。

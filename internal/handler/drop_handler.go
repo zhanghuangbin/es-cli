@@ -25,7 +25,7 @@ func NewDropHandler(client *elasticsearch.Client) *DropHandler {
 // reDropTable 匹配 DROP TABLE 语句。
 // 捕获组：1=表名
 var reDropTable = regexp.MustCompile(
-	`(?i)^\s*DROP\s+TABLE\s+(\S+)\s*;?\s*$`,
+	`(?i)^\s*DROP\s+TABLE\s+(\S+?)\s*;?\s*$`,
 )
 
 // Execute 解析 DROP TABLE SQL 并调用 ES DELETE /{index} 删除索引。
