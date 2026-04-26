@@ -1,14 +1,12 @@
 package cmd
 
 import (
-	"context"
 	"fmt"
 	"os"
 
 	"github.com/spf13/cobra"
+	"github.com/zhanghuangbin/es-cli/internal/executor"
 	cmdfmt "github.com/zhanghuangbin/es-cli/internal/formatter/cmd"
-	"github.com/zhanghuangbin/es-cli/internal/handler"
-	"github.com/zhanghuangbin/es-cli/internal/types"
 )
 
 var (
@@ -43,30 +41,6 @@ var execCmd = &cobra.Command{
 			return err
 		}
 
-		sqlType := types.DetectSQLType(execSQL)
-
-		handlers := map[types.SQLType]handler.Handler{
-			types.SQLTypeSelect: handler.NewQueryHandler(client),
-			types.SQLTypeInsert: handler.NewInsertHandler(client),
-			types.SQLTypeUpdate: handler.NewUpdateHandler(client),
-			types.SQLTypeDelete: handler.NewDeleteHandler(client),
-			types.SQLTypeCreate: handler.NewCreateHandler(client),
-			types.SQLTypeDrop:   handler.NewDropHandler(client),
-			types.SQLTypeAlter:  handler.NewAlterHandler(client),
-		}
-
-		h, ok := handlers[sqlType]
-		if !ok {
-			return fmt.Errorf("不支持的 SQL 类型: %s", sqlType)
-		}
-
-		result, err := h.Execute(context.Background(), execSQL)
-		if err != nil {
-			return err
-		}
-
-		result.Meta.Type = sqlType
-
 		fmtr, err := cmdfmt.NewFormatter(cmdfmt.Options{
 			Format:   execFormat,
 			JSONPath: execJSONPath,
@@ -77,7 +51,8 @@ var execCmd = &cobra.Command{
 			return err
 		}
 
-		return fmtr.Format(result, os.Stdout)
+		exec := executor.New(fmtr, os.Stdout, client)
+		return exec.Execute(execSQL)
 	},
 }
 
