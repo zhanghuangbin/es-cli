@@ -122,13 +122,12 @@ func (r *REPL) showHelp() {
 	fmt.Println(`可用命令:
   .help            显示帮助信息
   .ping            测试 ES 连接是否正常
-  .format <类型>   设置输出格式 (table, json*, csv*)
+  .format <类型>   设置输出格式 (table, json*)
   .indices         列出所有索引
   .desc <索引名>    显示索引 mapping
   .exit            退出 es-cli
   Ctrl+D           退出 es-cli
 
-  * json/csv 格式暂未实现
 
 输入 SQL 语句查询 Elasticsearch。
 示例: SELECT * FROM my_index LIMIT 10

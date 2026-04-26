@@ -17,8 +17,6 @@ func New(format string) (Formatter, error) {
 		return &TableFormatter{}, nil
 	case "json":
 		return &JsonFormatter{}, nil
-	case "csv":
-		return nil, fmt.Errorf("格式 '%s' 暂未实现，敬请期待", format)
 	default:
 		return nil, fmt.Errorf("未知格式: %s（可选: table, json, csv）", format)
 	}

@@ -48,7 +48,7 @@ var sqlKeywords = []prompt.Suggest{
 var builtinCommands = []prompt.Suggest{
 	{Text: ".help", Description: "显示帮助"},
 	{Text: ".ping", Description: "测试 ES 连接"},
-	{Text: ".format", Description: "设置输出格式 (table/json/csv)"},
+	{Text: ".format", Description: "设置输出格式 (table/json)"},
 	{Text: ".indices", Description: "列出所有索引"},
 	{Text: ".schema", Description: "显示索引 mapping"},
 	{Text: ".exit", Description: "退出 es-cli"},
